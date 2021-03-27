@@ -1,24 +1,25 @@
-use core::fmt::{self, Write};
+use core::{fmt::{Write}, panic::PanicInfo};
 
 use drivers::vga;
 
-#[lang = "panic_fmt"]
-#[no_mangle]
-pub extern "C" fn panic_fmt(
-    msg: fmt::Arguments,
-    file: &'static str,
-    line: u32,
-    col: u32,
-) -> ! {
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
     vga::try_handle().map(|mut vga| {
         let _ = vga.write_str("\x1b[0;31mkernel panicked at '");
-        let _ = vga.write_fmt(msg);
-        let _ = write!(vga, "', {}:{}:{}\x1b[0m", file, line, col);
+
+        if let Some(s) = info.payload().downcast_ref::<&str>() {
+            let _ = vga.write_str(s);
+        } else {
+            let _ = vga.write_str("<payload not a &str>");
+        }
+
+        if let Some(l) = info.location() {
+            let _ = write!(vga, "', {}:{}\x1b[0m", l.file(), l.line());
+        } else {
+            let _ = write!(vga, "', <location unavailable>\x1b[0m");
+        }
     });
 
     loop {}
 }
 
-#[lang = "eh_personality"]
-#[no_mangle]
-pub extern "C" fn eh_personality() {}

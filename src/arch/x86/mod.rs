@@ -196,13 +196,13 @@ pub mod kernel {
     use core::mem;
     use core::slice;
 
-    use alloc::allocator::{Alloc, Layout};
+    use alloc::alloc::{GlobalAlloc, Layout};
 
     use spin::{Mutex, MutexGuard, Once};
 
-    use x86::shared::control_regs::{CR0_ENABLE_PAGING, CR0_WRITE_PROTECT,
-                                    CR4_ENABLE_PSE, cr0, cr0_write, cr4,
-                                    cr4_write};
+    use x86::controlregs::{Cr0, Cr4,
+                            cr0, cr0_write, cr4,
+                            cr4_write};
 
     use ALLOCATOR;
 
@@ -250,12 +250,12 @@ pub mod kernel {
 
         let mut page_map = page_map.load();
 
-        cr4_write(cr4() | CR4_ENABLE_PSE);
-        cr0_write(cr0() | CR0_ENABLE_PAGING | CR0_WRITE_PROTECT);
+        cr4_write(cr4() | Cr4::CR4_ENABLE_PSE);
+        cr0_write(cr0() | Cr0::CR0_ENABLE_PAGING | Cr0::CR0_WRITE_PROTECT);
         // add KERNEL_BASE to stack pointer
         // add KERNEL_BASE to base pointer
         // walk the call stack and add KERNEL_BASE to every saved ebp and eip
-        asm!("
+        llvm_asm!("
                 leal    init_paging.higher_half, %eax
                 jmpl    *%eax
         init_paging.higher_half:
@@ -366,8 +366,7 @@ pub mod kernel {
                 .alloc(Layout::from_size_align_unchecked(
                     len * mem::size_of::<gdt::Entry>(),
                     mem::size_of::<gdt::Entry>(),
-                ))
-                .unwrap();
+                ));
             let table = slice::from_raw_parts_mut(ptr as *mut _, len);
 
             for entry in table.iter_mut() {
@@ -419,8 +418,7 @@ pub mod kernel {
                 .alloc(Layout::from_size_align_unchecked(
                     len * mem::size_of::<idt::Entry>(),
                     mem::size_of::<idt::Entry>(),
-                ))
-                .unwrap();
+                ));
             let table = slice::from_raw_parts_mut(ptr as *mut _, len);
 
             for entry in table.iter_mut() {

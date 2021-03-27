@@ -1,16 +1,16 @@
-use core::nonzero::NonZero;
+use core::num::NonZeroU16;
 
-use x86::shared::io;
+use x86::io;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Port {
-    portno: NonZero<u16>,
+    portno: NonZeroU16,
 }
 
 impl Port {
     pub const unsafe fn new(portno: u16) -> Port {
         Port {
-            portno: NonZero::new_unchecked(portno),
+            portno: NonZeroU16::new_unchecked(portno),
         }
     }
 
@@ -44,14 +44,14 @@ impl Port {
     }
 
     pub fn read(&mut self, buf: &mut [u8]) {
-        unsafe {
-            io::insb(self.portno.get(), buf);
+        for x in 0..buf.len() {
+            buf[x] = self.read_byte();
         }
     }
 
     pub fn write(&mut self, buf: &[u8]) {
-        unsafe {
-            io::outsb(self.portno.get(), buf);
+        for byte in buf.iter() {
+            self.write_byte(*byte);
         }
     }
 
@@ -68,6 +68,8 @@ impl Port {
     }
 
     pub unsafe fn read_unsafe(&self, buf: &mut [u8]) {
-        io::insb(self.portno.get(), buf);
+        for x in 0..buf.len() {
+            buf[x] = io::inb(self.portno.get());
+        }
     }
 }

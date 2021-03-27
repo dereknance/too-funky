@@ -1,0 +1,6 @@
+[unstable]
+build-std = ["core,alloc,compiler_builtins"]
+
+[build]
+target = "i686-unknown-funky.json"
+

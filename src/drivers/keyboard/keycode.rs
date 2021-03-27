@@ -177,7 +177,7 @@ impl Keycode {
         // because it doesn't really matter what this returns,
         // as long as its unique
         use core::intrinsics;
-        unsafe { intrinsics::discriminant_value(self) as u8 }
+        intrinsics::discriminant_value(self) as u8
     }
 
     pub fn into_char(self) -> Option<u8> {

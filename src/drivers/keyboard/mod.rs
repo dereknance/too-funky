@@ -1,5 +1,5 @@
 use spin::{Mutex, Once};
-use x86::shared::irq;
+use x86::irq;
 
 use drivers::pic;
 use arch::interrupt::ExceptionStackFrame;

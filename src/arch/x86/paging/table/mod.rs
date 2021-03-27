@@ -1,7 +1,7 @@
 use core::slice;
 use core::ops::{Deref, DerefMut};
 
-use x86::shared::control_regs::{cr3, cr3_write};
+use x86::controlregs::{cr3, cr3_write};
 
 use arch::paging::addr::*;
 use mem::frame::FRAME_SIZE;
@@ -150,7 +150,7 @@ impl<'a> InactiveTable<'a> {
         let offset = phys.into_inner() & (FRAME_SIZE - 1);
         self.default_map(Virtual::new(0xffc00000), phys & !(FRAME_SIZE - 1));
 
-        cr3_write(phys.into_inner());
+        cr3_write(phys.into_inner() as u64);
 
         let inner = Table::new(slice::from_raw_parts_mut(
             (0xffc00000 + offset) as *mut _,
@@ -183,7 +183,7 @@ impl<'a> InactiveTable<'a> {
         self.default_map(addr, old_phys & !(FRAME_SIZE - 1));
 
         let new_active = unsafe {
-            cr3_write(new_phys.into_inner());
+            cr3_write(new_phys.into_inner() as u64);
 
             let inner = Table::new(slice::from_raw_parts_mut(
                 (0xffc00000 + new_offset) as *mut _,

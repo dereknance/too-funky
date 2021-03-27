@@ -1,17 +1,11 @@
-#![feature(lang_items)]
 #![feature(const_fn)]
-#![feature(compiler_builtins_lib)]
-#![feature(core_panic)]
-#![feature(asm)]
+#![feature(llvm_asm)]
 #![feature(global_asm)]
 #![feature(naked_functions)]
 #![feature(core_intrinsics)]
-#![feature(fn_must_use)]
-#![feature(global_allocator)]
-#![feature(alloc)]
+#![feature(alloc_error_handler)]
 #![feature(allocator_api)]
 #![feature(ptr_internals)]
-#![feature(nonzero)]
 #![feature(abi_x86_interrupt)]
 #![feature(decl_macro)]
 #![no_std]
@@ -23,7 +17,6 @@ extern crate alloc;
 extern crate bit_field;
 #[macro_use]
 extern crate bitflags;
-extern crate compiler_builtins;
 extern crate linked_list_allocator;
 extern crate multiboot2;
 #[macro_use]
@@ -33,7 +26,7 @@ extern crate spin;
 extern crate x86;
 extern crate raw_cpuid;
 
-use x86::shared::irq;
+use x86::irq;
 
 pub mod macros;
 #[cfg_attr(target_arch = "x86", path = "arch/x86/mod.rs")]
@@ -59,6 +52,11 @@ use macros::*;
 use linked_list_allocator::LockedHeap;
 #[global_allocator]
 pub static ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+    panic!("allocation error: {:?}", layout);
+}
 
 pub fn kmain(kinfo: &Kinfo) {
     kprint!("paging... ");

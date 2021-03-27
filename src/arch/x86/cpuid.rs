@@ -1,7 +1,7 @@
 pub fn available() -> bool {
     let available: i32;
     unsafe {
-        asm!("
+        llvm_asm!("
             pushfl
             pushfl
             xorl    $$0x00200000, (%esp)

@@ -18,5 +18,5 @@ pub type ExceptionHandler =
     unsafe extern "x86-interrupt" fn(&ExceptionStackFrame, usize);
 
 pub unsafe fn lidt(idtr: &Idtr) {
-    asm!("lidtl   $0" : : "*m"(idtr) : "memory" : "volatile");
+    llvm_asm!("lidtl   $0" : : "*m"(idtr) : "memory" : "volatile");
 }

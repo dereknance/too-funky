@@ -53,11 +53,11 @@ grub-mkrescue -o ${IMAGE} isofiles
 
 [tasks.build]
 condition = { channels = ["nightly"], env_set = ["TARGET", "RUST_TARGET_PATH"] }
-script = ["xargo build --target ${TARGET}"]
+script = ["cargo build"]
 
 [tasks.build-release]
 condition = { channels = ["nightly"], env_set = ["TARGET", "RUST_TARGET_PATH"] }
-script = ["xargo build --release --target ${TARGET}"]
+script = ["cargo build --release"]
 
 [tasks.clean]
 script = ["rm -rf target isofiles"]
